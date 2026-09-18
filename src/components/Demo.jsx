@@ -1,6 +1,9 @@
 export default function Demo() {
   return (
-    <section className="py-24 px-8 bg-[#07111E]">
+    <section
+      id="demo"
+      className="py-24 px-8 bg-[#07111E]"
+    >
       <div className="max-w-6xl mx-auto text-center">
 
         <h2 className="text-5xl font-bold mb-6">
@@ -13,7 +16,7 @@ export default function Demo() {
           vibration alerts, and emergency assistance.
         </p>
 
-        <div className="rounded-3xl border border-cyan-400 bg-slate-900 h-[500px] flex items-center justify-center">
+        <div className="rounded-3xl border border-cyan-400 bg-slate-900 h-[500px] flex items-center justify-center hover:border-cyan-300 transition-all duration-300">
 
           <div className="text-center">
 
@@ -37,3 +40,4 @@ export default function Demo() {
     </section>
   );
 }
+

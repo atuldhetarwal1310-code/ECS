@@ -23,8 +23,12 @@ export default function WhyChoose() {
   ];
 
   return (
-    <section className="py-24 px-8 bg-[#081423]">
+    <section
+      id="whychoose"
+      className="py-24 px-8 bg-[#081423]"
+    >
       <div className="max-w-7xl mx-auto">
+
         <h2 className="text-5xl font-bold text-center mb-16">
           Why Choose <span className="text-cyan-400">PRAESIDIUM?</span>
         </h2>
@@ -33,7 +37,7 @@ export default function WhyChoose() {
           {reasons.map((item, index) => (
             <div
               key={index}
-              className="bg-slate-900 rounded-2xl p-8 border border-slate-800 hover:border-cyan-400 transition-all duration-300"
+              className="bg-slate-900 rounded-2xl p-8 border border-slate-800 hover:border-cyan-400 hover:scale-105 transition-all duration-300"
             >
               <h3 className="text-2xl font-semibold mb-4">
                 {item.title}
@@ -45,7 +49,9 @@ export default function WhyChoose() {
             </div>
           ))}
         </div>
+
       </div>
     </section>
   );
 }
+

@@ -19,7 +19,10 @@ export default function Impact() {
   ];
 
   return (
-    <section className="py-24 px-8 bg-slate-950">
+    <section
+      id="impact"
+      className="py-24 px-8 bg-slate-950"
+    >
       <div className="max-w-7xl mx-auto">
 
         <h2 className="text-5xl font-bold text-center mb-4">
@@ -35,7 +38,7 @@ export default function Impact() {
           {stats.map((stat, index) => (
             <div
               key={index}
-              className="bg-slate-900 rounded-2xl p-8 text-center border border-slate-800 hover:border-cyan-400 transition"
+              className="bg-slate-900 rounded-2xl p-8 text-center border border-slate-800 hover:border-cyan-400 hover:scale-105 transition-all duration-300"
             >
               <h3 className="text-5xl font-bold text-cyan-400 mb-4">
                 {stat.number}
@@ -52,3 +55,4 @@ export default function Impact() {
     </section>
   );
 }
+
