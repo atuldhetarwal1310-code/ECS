@@ -1,16 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const fallbackUrl = 'https://yxzdvilzlbxomzfayrvs.supabase.co'
+const fallbackAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4emR2aWx6bGJ4b216ZmF5cnZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3MDUxMTIsImV4cCI6MjEwNTI4MTExMn0.VCHx3wxlZIa2brrIB_xKtfqxK3RL3I9B5qtx1MU8-HA'
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn(
-    'Supabase environment variables are missing! ' +
-    'Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your Netlify environment variables.'
-  )
-}
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || fallbackUrl
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || fallbackAnonKey
 
-export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder-key'
-)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)

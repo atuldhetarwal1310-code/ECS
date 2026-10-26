@@ -39,19 +39,40 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
+    let mounted = true;
+
+    // Safety timeout: ensure loading is NEVER permanently stuck
+    const safetyTimer = setTimeout(() => {
+      if (mounted) setLoading(false);
+    }, 1500);
+
     // Check active sessions and sets the user
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setCurrentUser(normalizeUser(session?.user));
-      setLoading(false);
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        if (mounted) {
+          setCurrentUser(normalizeUser(session?.user));
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.warn("Supabase getSession failed:", err);
+        if (mounted) setLoading(false);
+      });
 
     // Listen for changes on auth state
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setCurrentUser(normalizeUser(session?.user));
-      setLoading(false);
+      if (mounted) {
+        setCurrentUser(normalizeUser(session?.user));
+        setLoading(false);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      clearTimeout(safetyTimer);
+      subscription?.unsubscribe();
+    };
   }, []);
 
   const loginWithEmail = async (email, password) => {
