@@ -2,11 +2,13 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import device from "../assets/device.png";
+import { useTheme } from "../context/ThemeContext";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function FloatingWatch() {
   const outerRef = useRef(null);
+  const { isCute } = useTheme();
 
   useEffect(() => {
     const outer = outerRef.current;
@@ -19,35 +21,22 @@ export default function FloatingWatch() {
       const landingEl = document.getElementById("watch-landing");
       if (!circleEl || !landingEl) return;
 
-      /* ──────────────────────────────────────────────────────────────
-         Measure both anchors in VIEWPORT space at scroll = 0.
-         Since watch is position:fixed, x/y are viewport coordinates.
-      ────────────────────────────────────────────────────────────── */
       const cRect = circleEl.getBoundingClientRect();
       const lRect = landingEl.getBoundingClientRect();
 
       const halfW = outer.offsetWidth  / 2;
       const halfH = outer.offsetHeight / 2;
 
-      // ── START: center of hero "PRAESIDIUM SMART BAND" circle ──
       const startX = cRect.left + cRect.width  / 2 - halfW;
       const startY = cRect.top  + cRect.height / 2 - halfH;
 
-      // ── END: center of "DEVICE IN-FIELD VIEW" landing zone ──
-      // When safety section's center hits viewport center, landing's
-      // viewport y = window.innerHeight / 2.
-      // x never changes with vertical scroll.
       const endX = lRect.left + lRect.width  / 2 - halfW;
       const endY = window.innerHeight / 2 - halfH + 20;
 
-      /* ── Curve control: arc sweeps RIGHT then curves back to land ──
-         The arc midpoint goes to the RIGHT of the end position so
-         the path feels like a natural flowing right-to-land curve.  */
       const arcPush = (endX - startX) * 0.45 + 140;
       const midX    = endX + arcPush;
       const midY    = startY + (endY - startY) * 0.48;
 
-      /* ── Snap watch to hero circle ── */
       gsap.set(outer, {
         position: "fixed",
         top:  0,
@@ -61,20 +50,8 @@ export default function FloatingWatch() {
       });
 
       ctx = gsap.context(() => {
-        /* ── Scroll-linked curved timeline ──────────────────────────
-           scrub: 0.8 → watch moves in near-real-time with scroll.
-           The timeline has 2 phases forming the arc curve.
-
-           trigger range:
-             start  = very top of page (#home top)
-             end    = when safety section center hits viewport center
-
-           Beyond the end point: watch stays at endX/endY (locked).
-           Scrolling back into the range: watch reverses the curve.
-        ─────────────────────────────────────────────────────────── */
         const tl = gsap.timeline();
 
-        // Phase 1 — sweep RIGHT (power2.in = natural acceleration outward)
         tl.to(outer, {
           x: midX,
           y: midY,
@@ -84,7 +61,6 @@ export default function FloatingWatch() {
           duration: 0.44,
         });
 
-        // Phase 2 — curve back LEFT + DOWN into landing ring (power3.out = smooth decelerate)
         tl.to(outer, {
           x: endX,
           y: endY,
@@ -100,23 +76,31 @@ export default function FloatingWatch() {
           start: "top top",
           endTrigger: "#safety",
           end: "center center",
-          scrub: 0.8,               // smooth scroll-sync, nearly no lag
-          invalidateOnRefresh: true, // recalculate on window resize
+          scrub: 0.8,
+          invalidateOnRefresh: true,
         });
       });
     };
 
     const timer = setTimeout(init, 80);
 
+    // Re-initialize on viewport resize
+    const handleResize = () => {
+      ctx?.revert();
+      ScrollTrigger.getAll().forEach((t) => t.kill());
+      setTimeout(init, 100);
+    };
+    window.addEventListener("resize", handleResize);
+
     return () => {
       clearTimeout(timer);
       ctx?.revert();
       ScrollTrigger.getAll().forEach((t) => t.kill());
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 
   return (
-    /* Outer: GSAP scroll-controls x/y/rotation/scale via ScrollTrigger */
     <div
       ref={outerRef}
       style={{
@@ -128,17 +112,16 @@ export default function FloatingWatch() {
         willChange: "transform",
       }}
     >
-      {/*
-        Inner: pure CSS float animation.
-        Uses its OWN transform (translateY only) on a CHILD element.
-        Completely separate from GSAP — zero interference.
-      */}
       <div className="watch-float">
         <img
           src={device}
           alt="PRAESIDIUM Watch"
           style={{ display: "block" }}
-          className="w-[250px] md:w-[280px] lg:w-[300px] drop-shadow-[0_0_50px_rgba(6,182,212,0.6)]"
+          className={`w-[160px] sm:w-[250px] md:w-[280px] lg:w-[300px] transition-all duration-500 ${
+            isCute 
+              ? "drop-shadow-[0_0_45px_rgba(244,63,94,0.55)]" 
+              : "drop-shadow-[0_20px_45px_rgba(0,0,0,0.85)] filter brightness-105"
+          }`}
         />
       </div>
     </div>

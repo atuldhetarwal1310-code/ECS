@@ -1,51 +1,95 @@
+import { ShieldCheck, Zap, HeartHandshake, DollarSign } from "lucide-react";
+import { useTheme } from "../context/ThemeContext";
+
 export default function WhyChoose() {
+  const { isCute } = useTheme();
+
   const reasons = [
     {
-      title: "Real-Time Protection",
+      icon: <ShieldCheck className={isCute ? "text-rose-400" : "text-amber-400"} size={26} />,
+      title: "Real-Time Multi-Sensor Safety",
       description:
-        "Instant obstacle detection and vibration alerts help users navigate safely.",
+        "Instant obstacle ultrasonic scanning and haptic vibration feedback protect the wearer from collisions before they occur.",
     },
     {
-      title: "Smart Emergency Response",
+      icon: <Zap className={isCute ? "text-amber-400" : "text-amber-400"} size={26} />,
+      title: "Zero-Delay Emergency Response",
       description:
-        "Fall detection and SOS functionality ensure immediate assistance when needed.",
+        "Instant fall detection algorithms (>2.8g) and one-click SOS distress beacons notify guardians with live GPS coordinates.",
     },
     {
-      title: "Affordable Innovation",
+      icon: <DollarSign className={isCute ? "text-emerald-400" : "text-emerald-400"} size={26} />,
+      title: "Accessible & Cost-Effective",
       description:
-        "Designed using cost-effective hardware without compromising performance.",
+        "Engineered with high-efficiency ESP32 microcontrollers to deliver premium assistive technology at a fraction of legacy equipment cost.",
     },
     {
-      title: "Easy to Use",
+      icon: <HeartHandshake className={isCute ? "text-purple-400" : "text-zinc-200"} size={26} />,
+      title: "Seamless Guardian Ecosystem",
       description:
-        "A lightweight wearable with a simple interface suitable for everyday use.",
+        "Web-based portal with dark Leaflet maps, customizable geofence radii, audio alarms, and live Supabase telemetry tracking.",
     },
   ];
 
   return (
     <section
       id="whychoose"
-      className="py-24 px-8 bg-[#081423]"
+      className="py-24 px-6 sm:px-12 relative overflow-hidden transition-colors duration-300"
     >
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto relative z-10">
 
-        <h2 className="text-5xl font-bold text-center mb-16">
-          Why Choose <span className="text-cyan-400">PRAESIDIUM?</span>
-        </h2>
+        <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+          <span 
+            className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider border ${
+              isCute 
+                ? "bg-rose-500/10 border-rose-500/30 text-rose-300" 
+                : "bg-zinc-900 border-zinc-700 text-zinc-300"
+            }`}
+          >
+            THE PRAESIDIUM ADVANTAGE
+          </span>
+          <h2 className="text-4xl sm:text-5xl font-black text-white drop-shadow-xl">
+            Why Choose{" "}
+            <span 
+              className={`text-transparent bg-clip-text ${
+                isCute 
+                  ? "bg-gradient-to-r from-rose-400 via-pink-400 to-purple-400" 
+                  : "bg-gradient-to-r from-white via-zinc-200 to-amber-300"
+              }`}
+            >
+              PRAESIDIUM?
+            </span>
+          </h2>
+          <p className="text-zinc-400 text-sm sm:text-base">
+            Combining wearable hardware precision with real-time cloud guardian oversight.
+          </p>
+        </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-6">
           {reasons.map((item, index) => (
             <div
               key={index}
-              className="bg-slate-900 rounded-2xl p-8 border border-slate-800 hover:border-cyan-400 hover:scale-105 transition-all duration-300"
+              className={`glass-panel p-8 border transition-all duration-300 flex items-start gap-5 group hover:-translate-y-1 ${
+                isCute
+                  ? "border-rose-500/20 hover:border-rose-400/50 hover:shadow-[0_10px_30px_rgba(244,63,94,0.18)]"
+                  : "border-zinc-800 hover:border-zinc-600 hover:shadow-[0_15px_35px_rgba(0,0,0,0.6)]"
+              }`}
             >
-              <h3 className="text-2xl font-semibold mb-4">
-                {item.title}
-              </h3>
+              <div className={`p-3.5 rounded-2xl border shrink-0 transition group-hover:scale-105 ${
+                isCute ? "bg-rose-950/40 border-rose-500/20" : "bg-zinc-900 border-zinc-700/60"
+              }`}>
+                {item.icon}
+              </div>
 
-              <p className="text-gray-400">
-                {item.description}
-              </p>
+              <div>
+                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-amber-200 transition">
+                  {item.title}
+                </h3>
+
+                <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                  {item.description}
+                </p>
+              </div>
             </div>
           ))}
         </div>
@@ -54,4 +98,3 @@ export default function WhyChoose() {
     </section>
   );
 }
-

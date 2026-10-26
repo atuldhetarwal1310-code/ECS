@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import { 
   ShieldCheck, 
   Mail, 
@@ -22,9 +23,10 @@ export default function HeroLoginCard() {
     currentUser, 
     loginWithEmail, 
     signupWithEmail, 
-    loginWithGoogle, 
     logout 
   } = useAuth();
+
+  const { isCute } = useTheme();
 
   const [mode, setMode] = useState("signin"); // "signin" | "signup"
   const [email, setEmail] = useState("");
@@ -57,7 +59,8 @@ export default function HeroLoginCard() {
         setSuccess("Connected as Guardian!");
       } else {
         await signupWithEmail(email, password, name);
-        setSuccess("Guardian account registered!");
+        setSuccess("Guardian registered! Please verify your email before connecting.");
+        setMode("signin");
       }
     } catch (err) {
       setError(err?.message || "Authentication failed.");
@@ -80,41 +83,51 @@ export default function HeroLoginCard() {
     }
   };
 
-  const handleGoogleAuth = async () => {
-    setError("");
-    setSuccess("");
-    try {
-      setLoading(true);
-      await loginWithGoogle();
-      setSuccess("Google Sign-In successful!");
-    } catch (err) {
-      setError(err?.message || "Google sign-in failed.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="relative group">
       {/* Decorative ambient background glows */}
-      <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/30 to-blue-600/30 rounded-3xl blur-xl opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 pointer-events-none" />
+      <div 
+        className={`absolute -inset-1 rounded-3xl blur-xl opacity-60 group-hover:opacity-100 transition duration-1000 pointer-events-none ${
+          isCute
+            ? "bg-gradient-to-r from-rose-500/30 to-purple-600/30"
+            : "bg-zinc-800/40"
+        }`} 
+      />
 
       {/* Main Glassmorphic Container */}
-      <div className="relative bg-slate-900/85 backdrop-blur-2xl border border-cyan-500/30 rounded-3xl p-7 md:p-8 shadow-2xl text-white overflow-hidden">
+      <div 
+        className={`relative backdrop-blur-2xl rounded-3xl p-7 md:p-8 shadow-2xl transition-all duration-300 border ${
+          isCute
+            ? "bg-[#180f1d]/90 border-rose-500/30 text-rose-50 shadow-[0_15px_40px_rgba(244,63,94,0.15)]"
+            : "bg-[#121215]/90 border-zinc-800 text-zinc-100 shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
+        }`}
+      >
         
         {/* Top Status Header */}
-        <div className="flex items-center justify-between pb-6 border-b border-slate-800/80">
+        <div className={`flex items-center justify-between pb-5 border-b ${
+          isCute ? "border-rose-500/20" : "border-zinc-800/80"
+        }`}>
           <div className="flex items-center gap-2.5">
             <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-cyan-500"></span>
+              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                isCute ? "bg-rose-400" : "bg-emerald-400"
+              }`} />
+              <span className={`relative inline-flex rounded-full h-3 w-3 ${
+                isCute ? "bg-rose-500" : "bg-emerald-500"
+              }`} />
             </span>
-            <span className="text-xs font-extrabold tracking-widest text-cyan-400 uppercase">
+            <span className={`text-xs font-extrabold tracking-widest uppercase font-mono ${
+              isCute ? "text-rose-400" : "text-zinc-300"
+            }`}>
               {currentUser ? "Live Guardian Console" : "Guardian Portal"}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold">
+          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
+            isCute 
+              ? "bg-rose-500/10 border-rose-500/30 text-rose-300" 
+              : "bg-zinc-900 border-zinc-700 text-zinc-300"
+          }`}>
             <ShieldCheck size={14} />
             <span>Encrypted</span>
           </div>
@@ -124,16 +137,24 @@ export default function HeroLoginCard() {
         {currentUser ? (
           <div className="mt-6 space-y-6 animate-fadeIn">
             {/* User Profile Card */}
-            <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-800/90 to-slate-950 border border-cyan-400/40 relative overflow-hidden shadow-lg">
+            <div className={`p-5 rounded-2xl border relative overflow-hidden shadow-lg ${
+              isCute
+                ? "bg-rose-950/20 border-rose-500/30"
+                : "bg-zinc-900/70 border-zinc-700/60"
+            }`}>
               <div className="flex items-center gap-4">
                 {currentUser.photoURL ? (
                   <img 
                     src={currentUser.photoURL} 
                     alt="User Avatar" 
-                    className="w-14 h-14 rounded-full border-2 border-cyan-400 object-cover shadow-md"
+                    className="w-14 h-14 rounded-full border-2 border-zinc-700 object-cover shadow-md"
                   />
                 ) : (
-                  <div className="w-14 h-14 rounded-full bg-cyan-500/20 border-2 border-cyan-400 flex items-center justify-center text-cyan-300 font-bold text-xl shadow-md">
+                  <div className={`w-14 h-14 rounded-full border-2 flex items-center justify-center font-bold text-xl shadow-md ${
+                    isCute 
+                      ? "bg-rose-500/20 border-rose-400 text-rose-300" 
+                      : "bg-zinc-800 border-zinc-700 text-zinc-200"
+                  }`}>
                     {(currentUser.displayName || currentUser.email || "G")[0].toUpperCase()}
                   </div>
                 )}
@@ -141,12 +162,12 @@ export default function HeroLoginCard() {
                 <div>
                   <h3 className="text-lg font-bold text-white flex items-center gap-2">
                     {currentUser.displayName || "Primary Guardian"}
-                    <Sparkles size={16} className="text-cyan-400" />
+                    <Sparkles size={16} className={isCute ? "text-rose-400" : "text-amber-400"} />
                   </h3>
-                  <p className="text-xs text-gray-400">{currentUser.email}</p>
+                  <p className="text-xs text-zinc-400">{currentUser.email}</p>
                   <div className="mt-1 flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                      ● Active Connection
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono">
+                      ● Active Guardian Link
                     </span>
                   </div>
                 </div>
@@ -155,31 +176,35 @@ export default function HeroLoginCard() {
 
             {/* Live Device Status Cards */}
             <div className="space-y-3">
-              <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-gray-400 px-1">
-                <span>PRAESIDIUM Watch #041</span>
-                <span className="text-cyan-400 flex items-center gap-1">
-                  <Activity size={13} /> Synchronized
+              <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-zinc-400 px-1 font-mono">
+                <span>PRAESIDIUM S1 Hardware</span>
+                <span className={`flex items-center gap-1 ${isCute ? "text-rose-400" : "text-emerald-400"}`}>
+                  <Activity size={13} /> Streaming
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center gap-3">
+                <div className={`p-3.5 rounded-xl border flex items-center gap-3 ${
+                  isCute ? "bg-black/30 border-rose-500/20" : "bg-black/40 border-zinc-800"
+                }`}>
                   <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
                     <BatteryCharging size={18} />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 font-medium">Battery</p>
-                    <p className="text-sm font-bold text-white">94% • 18 hrs</p>
+                    <p className="text-xs text-zinc-400 font-medium">Battery</p>
+                    <p className="text-sm font-bold text-white font-mono">89% • Active</p>
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400">
+                <div className={`p-3.5 rounded-xl border flex items-center gap-3 ${
+                  isCute ? "bg-black/30 border-rose-500/20" : "bg-black/40 border-zinc-800"
+                }`}>
+                  <div className={`p-2 rounded-lg ${isCute ? "bg-rose-500/10 text-rose-400" : "bg-amber-500/10 text-amber-400"}`}>
                     <MapPin size={18} />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 font-medium">Geofence</p>
-                    <p className="text-sm font-bold text-white">Home Zone</p>
+                    <p className="text-xs text-zinc-400 font-medium">Geofence</p>
+                    <p className="text-sm font-bold text-white">Campus Zone</p>
                   </div>
                 </div>
               </div>
@@ -189,7 +214,7 @@ export default function HeroLoginCard() {
             <div className="pt-2 space-y-2.5">
               <button 
                 onClick={logout}
-                className="w-full py-3 px-4 rounded-xl bg-slate-800/80 hover:bg-red-500/20 text-gray-300 hover:text-red-400 border border-slate-700 hover:border-red-500/40 font-semibold text-sm transition flex items-center justify-center gap-2"
+                className="w-full py-3 px-4 rounded-xl bg-zinc-900 hover:bg-rose-500/20 text-zinc-300 hover:text-rose-400 border border-zinc-800 hover:border-rose-500/40 font-semibold text-sm transition flex items-center justify-center gap-2"
               >
                 <LogOut size={16} />
                 Disconnect Session
@@ -201,22 +226,22 @@ export default function HeroLoginCard() {
             {/* Header Text */}
             <div>
               <h3 className="text-2xl font-bold tracking-tight text-white">
-                {mode === "signin" ? "Access Guardian Console" : "Register New Guardian"}
+                {mode === "signin" ? "Guardian Console" : "Register Guardian"}
               </h3>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-zinc-400 mt-1">
                 Monitor real-time obstacle alerts, fall notifications & live GPS location.
               </p>
             </div>
 
             {/* Mode Selector Tabs */}
-            <div className="grid grid-cols-2 p-1 bg-slate-950/80 rounded-xl border border-slate-800">
+            <div className="grid grid-cols-2 p-1 bg-black/50 rounded-xl border border-zinc-800">
               <button
                 type="button"
                 onClick={() => { setMode("signin"); setError(""); }}
                 className={`py-2 text-xs font-bold rounded-lg transition ${
                   mode === "signin"
-                    ? "bg-cyan-500 text-black shadow-md"
-                    : "text-gray-400 hover:text-white"
+                    ? isCute ? "bg-rose-500 text-white shadow-md" : "bg-white text-black shadow-md font-extrabold"
+                    : "text-zinc-400 hover:text-white"
                 }`}
               >
                 Sign In
@@ -226,8 +251,8 @@ export default function HeroLoginCard() {
                 onClick={() => { setMode("signup"); setError(""); }}
                 className={`py-2 text-xs font-bold rounded-lg transition ${
                   mode === "signup"
-                    ? "bg-cyan-500 text-black shadow-md"
-                    : "text-gray-400 hover:text-white"
+                    ? isCute ? "bg-rose-500 text-white shadow-md" : "bg-white text-black shadow-md font-extrabold"
+                    : "text-zinc-400 hover:text-white"
                 }`}
               >
                 Create Account
@@ -236,7 +261,7 @@ export default function HeroLoginCard() {
 
             {/* Alerts */}
             {error && (
-              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2 animate-shake">
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2 animate-shake">
                 <AlertCircle size={16} className="shrink-0" />
                 <span>{error}</span>
               </div>
@@ -253,7 +278,7 @@ export default function HeroLoginCard() {
             <form onSubmit={handleSubmit} className="space-y-3.5">
               {mode === "signup" && (
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase text-gray-400 mb-1">
+                  <label className="block text-[11px] font-semibold uppercase text-zinc-400 mb-1">
                     Full Name
                   </label>
                   <div className="relative">
@@ -263,47 +288,47 @@ export default function HeroLoginCard() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="e.g. Sarah Jenkins"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/90 border border-slate-800 focus:border-cyan-400 focus:outline-none text-white text-xs transition"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-zinc-800 focus:border-amber-400 focus:outline-none text-white text-xs transition"
                     />
                   </div>
                 </div>
               )}
 
               <div>
-                <label className="block text-[11px] font-semibold uppercase text-gray-400 mb-1">
+                <label className="block text-[11px] font-semibold uppercase text-zinc-400 mb-1">
                   Guardian Email
                 </label>
                 <div className="relative">
-                  <Mail size={16} className="absolute left-3 top-3 text-gray-500" />
+                  <Mail size={16} className="absolute left-3 top-3 text-zinc-500" />
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="guardian@example.com"
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-950/90 border border-slate-800 focus:border-cyan-400 focus:outline-none text-white text-xs transition"
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-black/60 border border-zinc-800 focus:border-amber-400 focus:outline-none text-white text-xs transition"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold uppercase text-gray-400 mb-1">
+                <label className="block text-[11px] font-semibold uppercase text-zinc-400 mb-1">
                   Password
                 </label>
                 <div className="relative">
-                  <Lock size={16} className="absolute left-3 top-3 text-gray-500" />
+                  <Lock size={16} className="absolute left-3 top-3 text-zinc-500" />
                   <input
                     type={showPassword ? "text" : "password"}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-9 pr-9 py-2.5 rounded-xl bg-slate-950/90 border border-slate-800 focus:border-cyan-400 focus:outline-none text-white text-xs transition"
+                    className="w-full pl-9 pr-9 py-2.5 rounded-xl bg-black/60 border border-zinc-800 focus:border-amber-400 focus:outline-none text-white text-xs transition"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-gray-500 hover:text-white"
+                    className="absolute right-3 top-3 text-zinc-500 hover:text-white"
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -313,7 +338,11 @@ export default function HeroLoginCard() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-400 to-cyan-500 hover:from-cyan-300 hover:to-cyan-400 text-black font-bold text-sm transition shadow-lg hover:shadow-cyan-500/25 flex items-center justify-center gap-2"
+                className={`w-full py-3 px-4 rounded-xl font-bold text-sm transition shadow-lg flex items-center justify-center gap-2 ${
+                  isCute
+                    ? "bg-gradient-to-r from-rose-500 to-purple-600 hover:opacity-95 text-white shadow-rose-500/25"
+                    : "bg-white hover:bg-zinc-200 text-black font-extrabold shadow-black/40"
+                }`}
               >
                 {loading ? (
                   <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
@@ -326,43 +355,20 @@ export default function HeroLoginCard() {
               </button>
             </form>
 
-            {/* Quick Demo & Social Login */}
-            <div className="pt-2 grid grid-cols-2 gap-2">
+            {/* Quick Demo */}
+            <div className="pt-2">
               <button
                 type="button"
                 onClick={handleQuickDemo}
                 disabled={loading}
-                className="py-2.5 px-3 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs font-bold transition flex items-center justify-center gap-1.5"
+                className={`w-full py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                  isCute 
+                    ? "bg-rose-500/10 hover:bg-rose-500/20 border-rose-500/30 text-rose-300" 
+                    : "bg-zinc-900 hover:bg-zinc-800 border-zinc-700 text-zinc-300 hover:text-white"
+                }`}
               >
-                <Zap size={14} className="text-cyan-400" />
-                <span>Quick Demo</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleGoogleAuth}
-                disabled={loading}
-                className="py-2.5 px-3 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-gray-300 hover:text-white text-xs font-bold transition flex items-center justify-center gap-1.5"
-              >
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
-                  <path
-                    fill="#4285F4"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                  />
-                </svg>
-                <span>Google SSO</span>
+                <Zap size={14} className={isCute ? "text-rose-400" : "text-amber-400"} />
+                <span>Quick Guardian Demo Access</span>
               </button>
             </div>
           </div>

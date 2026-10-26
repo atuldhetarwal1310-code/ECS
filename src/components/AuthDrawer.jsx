@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import { 
   X, 
   Mail, 
@@ -16,6 +17,7 @@ import {
   MapPin,
   HeartPulse
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function AuthDrawer() {
   const { 
@@ -26,9 +28,11 @@ export default function AuthDrawer() {
     closeDrawer,
     loginWithEmail,
     signupWithEmail,
-    loginWithGoogle,
     logout 
   } = useAuth();
+  
+  const { isCute } = useTheme();
+  const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -60,34 +64,17 @@ export default function AuthDrawer() {
       if (drawerMode === "signin") {
         await loginWithEmail(email, password);
         setSuccess("Successfully signed in!");
+        setTimeout(() => {
+          closeDrawer();
+          resetForm();
+        }, 1000);
       } else {
         await signupWithEmail(email, password, name);
-        setSuccess("Account created successfully!");
+        setSuccess("Account registered! Please check your inbox to verify your email, then sign in.");
+        setDrawerMode("signin");
       }
-      setTimeout(() => {
-        closeDrawer();
-        resetForm();
-      }, 1000);
     } catch (err) {
       setError(err.message || "Failed to authenticate. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    setError("");
-    setSuccess("");
-    try {
-      setIsSubmitting(true);
-      await loginWithGoogle();
-      setSuccess("Signed in with Google!");
-      setTimeout(() => {
-        closeDrawer();
-        resetForm();
-      }, 900);
-    } catch (err) {
-      setError(err.message || "Google sign-in failed.");
     } finally {
       setIsSubmitting(false);
     }
@@ -114,25 +101,35 @@ export default function AuthDrawer() {
     <div className="fixed inset-0 z-50 overflow-hidden">
       {/* Backdrop overlay with blur */}
       <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 animate-fadeIn"
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300 animate-fadeIn"
         onClick={closeDrawer}
       />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-gradient-to-b from-slate-900 via-[#0a1526] to-[#020617] border-l border-cyan-500/20 text-white shadow-2xl p-8 flex flex-col justify-between overflow-y-auto relative animate-slideInRight">
+        <div 
+          className={`w-screen max-w-md border-l shadow-2xl p-8 flex flex-col justify-between overflow-y-auto relative animate-slideInRight transition-all duration-300 ${
+            isCute
+              ? "bg-[#180f1d] border-rose-500/30 text-rose-50"
+              : "bg-[#0f0f12] border-zinc-800 text-zinc-100"
+          }`}
+        >
           
           {/* Header */}
           <div>
-            <div className="flex items-center justify-between pb-6 border-b border-slate-800">
+            <div className={`flex items-center justify-between pb-6 border-b ${
+              isCute ? "border-rose-500/20" : "border-zinc-800"
+            }`}>
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
-                  <ShieldCheck size={24} />
+                <div className={`p-2.5 rounded-xl border ${
+                  isCute ? "bg-rose-500/20 border-rose-500/30 text-rose-300" : "bg-zinc-800 border-zinc-700 text-amber-400"
+                }`}>
+                  <ShieldCheck size={22} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold tracking-wide">
+                  <h2 className="text-xl font-bold tracking-tight text-white">
                     {currentUser ? "Guardian Portal" : drawerMode === "signin" ? "Sign In" : "Create Account"}
                   </h2>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-zinc-400">
                     {currentUser ? "Manage user tracking & emergency alerts" : "Access your PRAESIDIUM dashboard"}
                   </p>
                 </div>
@@ -140,7 +137,7 @@ export default function AuthDrawer() {
 
               <button
                 onClick={closeDrawer}
-                className="p-2 rounded-full hover:bg-slate-800 text-gray-400 hover:text-white transition duration-200"
+                className="p-2 rounded-xl hover:bg-white/10 text-zinc-400 hover:text-white transition duration-200"
                 aria-label="Close menu"
               >
                 <X size={20} />
@@ -151,28 +148,34 @@ export default function AuthDrawer() {
             {currentUser ? (
               <div className="mt-8 space-y-6">
                 {/* User Profile Card */}
-                <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-800/80 to-slate-900 border border-cyan-500/30 shadow-lg relative overflow-hidden">
-                  <div className="absolute top-0 right-0 translate-x-4 -translate-y-4 w-24 h-24 bg-cyan-500/10 rounded-full blur-xl pointer-events-none" />
-                  
+                <div className={`p-6 rounded-2xl border shadow-lg relative overflow-hidden ${
+                  isCute 
+                    ? "bg-rose-950/20 border-rose-500/30" 
+                    : "bg-zinc-900/60 border-zinc-700/60"
+                }`}>
                   <div className="flex items-center gap-4">
                     {currentUser.photoURL ? (
                       <img 
                         src={currentUser.photoURL} 
                         alt="Avatar" 
-                        className="w-16 h-16 rounded-full border-2 border-cyan-400 object-cover shadow-md"
+                        className="w-14 h-14 rounded-full border-2 border-zinc-700 object-cover shadow-md"
                       />
                     ) : (
-                      <div className="w-16 h-16 rounded-full bg-cyan-500/20 border-2 border-cyan-400 flex items-center justify-center text-cyan-300 font-bold text-2xl shadow-md">
+                      <div className={`w-14 h-14 rounded-full border-2 flex items-center justify-center font-bold text-xl shadow-md ${
+                        isCute 
+                          ? "bg-rose-500/20 border-rose-400 text-rose-300" 
+                          : "bg-zinc-800 border-zinc-700 text-zinc-200"
+                      }`}>
                         {(currentUser.displayName || currentUser.email || "U")[0].toUpperCase()}
                       </div>
                     )}
                     <div>
                       <h3 className="text-lg font-bold text-white flex items-center gap-2">
                         {currentUser.displayName || "Presidium User"}
-                        <Sparkles size={16} className="text-cyan-400" />
+                        <Sparkles size={16} className={isCute ? "text-rose-400" : "text-amber-400"} />
                       </h3>
-                      <p className="text-sm text-gray-400">{currentUser.email}</p>
-                      <span className="inline-block mt-2 px-3 py-0.5 rounded-full text-xs font-semibold bg-cyan-400/10 text-cyan-300 border border-cyan-400/30">
+                      <p className="text-sm text-zinc-400">{currentUser.email}</p>
+                      <span className="inline-block mt-2 px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                         {currentUser.role || "Primary Guardian"}
                       </span>
                     </div>
@@ -181,13 +184,13 @@ export default function AuthDrawer() {
 
                 {/* Dashboard Quick Stats & Controls */}
                 <div className="space-y-4">
-                  <h4 className="text-xs font-semibold tracking-wider text-gray-400 uppercase">
+                  <h4 className="text-xs font-semibold tracking-wider text-zinc-400 uppercase font-mono">
                     Active System Status
                   </h4>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
-                      <div className="flex items-center gap-2 text-cyan-400 mb-2">
+                    <div className="p-4 rounded-xl bg-black/40 border border-zinc-800">
+                      <div className={`flex items-center gap-2 mb-2 ${isCute ? "text-rose-400" : "text-amber-400"}`}>
                         <MapPin size={18} />
                         <span className="text-xs font-bold uppercase">Geofence</span>
                       </div>
@@ -195,27 +198,34 @@ export default function AuthDrawer() {
                       <p className="text-xs text-emerald-400 mt-1">● Safe Boundary</p>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
-                      <div className="flex items-center gap-2 text-cyan-400 mb-2">
+                    <div className="p-4 rounded-xl bg-black/40 border border-zinc-800">
+                      <div className={`flex items-center gap-2 mb-2 ${isCute ? "text-purple-400" : "text-emerald-400"}`}>
                         <HeartPulse size={18} />
                         <span className="text-xs font-bold uppercase">Fall Sensor</span>
                       </div>
                       <p className="text-lg font-bold text-white">Monitoring</p>
-                      <p className="text-xs text-cyan-400 mt-1">● Real-time Sync</p>
+                      <p className="text-xs text-emerald-400 mt-1">● Real-time Sync</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
                 <div className="pt-4 space-y-3">
-                  <button className="w-full py-3 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold transition-all shadow-lg hover:shadow-cyan-500/25 flex items-center justify-center gap-2">
+                  <button 
+                    onClick={() => { closeDrawer(); navigate('/dashboard'); }}
+                    className={`w-full py-3 px-4 rounded-xl font-bold transition shadow-lg flex items-center justify-center gap-2 ${
+                      isCute 
+                        ? "bg-gradient-to-r from-rose-500 to-purple-600 text-white" 
+                        : "bg-white text-black hover:bg-zinc-200"
+                    }`}
+                  >
                     Open Guardian Dashboard
                     <ArrowRight size={18} />
                   </button>
 
                   <button 
                     onClick={handleLogout}
-                    className="w-full py-3 px-4 rounded-xl bg-slate-800/80 hover:bg-red-500/20 text-gray-300 hover:text-red-400 border border-slate-700 hover:border-red-500/40 font-semibold transition flex items-center justify-center gap-2"
+                    className="w-full py-3 px-4 rounded-xl bg-zinc-900 hover:bg-rose-500/20 text-zinc-300 hover:text-rose-400 border border-zinc-800 hover:border-rose-500/40 font-semibold transition flex items-center justify-center gap-2"
                   >
                     <LogOut size={18} />
                     Sign Out
@@ -225,13 +235,13 @@ export default function AuthDrawer() {
             ) : (
               <div className="mt-8 space-y-6">
                 {/* Auth Mode Toggle Tabs */}
-                <div className="grid grid-cols-2 p-1 bg-slate-800/80 rounded-xl border border-slate-700">
+                <div className="grid grid-cols-2 p-1 bg-black/50 rounded-xl border border-zinc-800">
                   <button
                     onClick={() => { setDrawerMode("signin"); setError(""); }}
                     className={`py-2 text-sm font-semibold rounded-lg transition ${
                       drawerMode === "signin"
-                        ? "bg-cyan-500 text-black shadow-md"
-                        : "text-gray-400 hover:text-white"
+                        ? isCute ? "bg-rose-500 text-white shadow-md" : "bg-white text-black shadow-md font-extrabold"
+                        : "text-zinc-400 hover:text-white"
                     }`}
                   >
                     Sign In
@@ -240,8 +250,8 @@ export default function AuthDrawer() {
                     onClick={() => { setDrawerMode("signup"); setError(""); }}
                     className={`py-2 text-sm font-semibold rounded-lg transition ${
                       drawerMode === "signup"
-                        ? "bg-cyan-500 text-black shadow-md"
-                        : "text-gray-400 hover:text-white"
+                        ? isCute ? "bg-rose-500 text-white shadow-md" : "bg-white text-black shadow-md font-extrabold"
+                        : "text-zinc-400 hover:text-white"
                     }`}
                   >
                     Register
@@ -250,7 +260,7 @@ export default function AuthDrawer() {
 
                 {/* Feedback Alerts */}
                 {error && (
-                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm flex items-start gap-2 animate-shake">
+                  <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm flex items-start gap-2 animate-shake">
                     <AlertCircle size={18} className="shrink-0 mt-0.5" />
                     <span>{error}</span>
                   </div>
@@ -263,98 +273,62 @@ export default function AuthDrawer() {
                   </div>
                 )}
 
-                {/* Social Login Button */}
-                <button
-                  type="button"
-                  onClick={handleGoogleSignIn}
-                  disabled={isSubmitting}
-                  className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-medium transition flex items-center justify-center gap-3 hover:border-cyan-400/50"
-                >
-                  <svg className="w-5 h-5" viewBox="0 0 24 24">
-                    <path
-                      fill="#4285F4"
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    />
-                    <path
-                      fill="#34A853"
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    />
-                    <path
-                      fill="#FBBC05"
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                    />
-                    <path
-                      fill="#EA4335"
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                    />
-                  </svg>
-                  Continue with Google
-                </button>
-
-                <div className="relative flex items-center my-4">
-                  <div className="flex-grow border-t border-slate-800" />
-                  <span className="shrink mx-4 text-xs font-semibold uppercase text-gray-500">
-                    or continue with email
-                  </span>
-                  <div className="flex-grow border-t border-slate-800" />
-                </div>
-
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {drawerMode === "signup" && (
                     <div>
-                      <label className="block text-xs font-medium text-gray-300 mb-1.5">
+                      <label className="block text-xs font-medium text-zinc-300 mb-1.5">
                         Full Name
                       </label>
                       <div className="relative">
-                        <UserIcon size={18} className="absolute left-3.5 top-3.5 text-gray-400" />
+                        <UserIcon size={18} className="absolute left-3.5 top-3.5 text-zinc-400" />
                         <input
                           type="text"
                           required
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           placeholder="e.g. John Doe"
-                          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-400 focus:outline-none text-white text-sm transition"
+                          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/60 border border-zinc-800 focus:border-amber-400 focus:outline-none text-white text-sm transition"
                         />
                       </div>
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-300 mb-1.5">
+                    <label className="block text-xs font-medium text-zinc-300 mb-1.5">
                       Email Address
                     </label>
                     <div className="relative">
-                      <Mail size={18} className="absolute left-3.5 top-3.5 text-gray-400" />
+                      <Mail size={18} className="absolute left-3.5 top-3.5 text-zinc-400" />
                       <input
                         type="email"
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="you@example.com"
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-400 focus:outline-none text-white text-sm transition"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/60 border border-zinc-800 focus:border-amber-400 focus:outline-none text-white text-sm transition"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-300 mb-1.5">
+                    <label className="block text-xs font-medium text-zinc-300 mb-1.5">
                       Password
                     </label>
                     <div className="relative">
-                      <Lock size={18} className="absolute left-3.5 top-3.5 text-gray-400" />
+                      <Lock size={18} className="absolute left-3.5 top-3.5 text-zinc-400" />
                       <input
                         type={showPassword ? "text" : "password"}
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-400 focus:outline-none text-white text-sm transition"
+                        className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-black/60 border border-zinc-800 focus:border-amber-400 focus:outline-none text-white text-sm transition"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3.5 top-3 text-gray-400 hover:text-white"
+                        className="absolute right-3.5 top-3 text-zinc-400 hover:text-white"
                       >
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
@@ -364,13 +338,17 @@ export default function AuthDrawer() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full mt-2 py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-black font-bold transition shadow-lg hover:shadow-cyan-500/20 flex items-center justify-center gap-2"
+                    className={`w-full mt-2 py-3 px-4 rounded-xl font-bold transition shadow-lg flex items-center justify-center gap-2 ${
+                      isCute 
+                        ? "bg-gradient-to-r from-rose-500 to-purple-600 text-white" 
+                        : "bg-amber-400 hover:bg-amber-300 text-black font-extrabold"
+                    }`}
                   >
                     {isSubmitting ? (
                       <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <>
-                        {drawerMode === "signin" ? "Sign In to Account" : "Complete Registration"}
+                        <span>{drawerMode === "signin" ? "Sign In to Account" : "Complete Registration"}</span>
                         <ArrowRight size={18} />
                       </>
                     )}
@@ -381,9 +359,9 @@ export default function AuthDrawer() {
           </div>
 
           {/* Footer */}
-          <div className="pt-6 border-t border-slate-800 text-center">
-            <p className="text-xs text-gray-500">
-              PRAESIDIUM Smart Safety Network • Secured by 256-bit Encryption
+          <div className="pt-6 border-t border-zinc-800 text-center">
+            <p className="text-xs text-zinc-500 font-mono">
+              PRAESIDIUM Smart Safety Network • 256-bit Secure
             </p>
           </div>
         </div>

@@ -1,15 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { 
-  auth, 
-  googleProvider 
-} from "../firebase";
-import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  signInWithPopup, 
-  signOut as firebaseSignOut,
-  onAuthStateChanged 
-} from "firebase/auth";
+import { supabase } from "../supabase";
 
 const AuthContext = createContext();
 
@@ -36,97 +26,61 @@ export function AuthProvider({ children }) {
     setIsDrawerOpen((prev) => !prev);
   };
 
-  // Helper check if Firebase is configured with real key
-  const isRealFirebase = import.meta.env.VITE_FIREBASE_API_KEY && import.meta.env.VITE_FIREBASE_API_KEY !== "demo-api-key";
+  const normalizeUser = (user) => {
+    if (!user) return null;
+    return {
+      uid: user.id,
+      email: user.email,
+      displayName: user.user_metadata?.full_name || user.email?.split("@")[0],
+      photoURL: user.user_metadata?.avatar_url || null,
+      isDemo: false,
+      role: "Guardian / Caregiver"
+    };
+  };
 
   useEffect(() => {
-    // Check local storage for demo user if firebase is in demo mode
-    const storedDemoUser = localStorage.getItem("presidium_demo_user");
-    if (!isRealFirebase && storedDemoUser) {
-      try {
-        setCurrentUser(JSON.parse(storedDemoUser));
-      } catch (e) {
-        console.error("Failed to parse stored demo user", e);
-      }
-    }
-
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (isRealFirebase) {
-        setCurrentUser(user);
-      }
+    // Check active sessions and sets the user
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setCurrentUser(normalizeUser(session?.user));
       setLoading(false);
     });
 
-    return unsubscribe;
-  }, [isRealFirebase]);
+    // Listen for changes on auth state
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setCurrentUser(normalizeUser(session?.user));
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const loginWithEmail = async (email, password) => {
-    if (isRealFirebase) {
-      return await signInWithEmailAndPassword(auth, email, password);
-    } else {
-      // Demo authentication simulation
-      await new Promise((res) => setTimeout(res, 600));
-      const demoUser = {
-        uid: "demo-user-123",
-        email: email,
-        displayName: email.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
-        photoURL: null,
-        isDemo: true,
-        role: "Guardian / Caregiver"
-      };
-      setCurrentUser(demoUser);
-      localStorage.setItem("presidium_demo_user", JSON.stringify(demoUser));
-      return demoUser;
-    }
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) throw error;
+    return data;
   };
 
   const signupWithEmail = async (email, password, name) => {
-    if (isRealFirebase) {
-      const res = await createUserWithEmailAndPassword(auth, email, password);
-      // User can update profile if needed
-      return res;
-    } else {
-      await new Promise((res) => setTimeout(res, 600));
-      const demoUser = {
-        uid: `demo-user-${Date.now()}`,
-        email: email,
-        displayName: name || email.split("@")[0],
-        photoURL: null,
-        isDemo: true,
-        role: "Primary Guardian"
-      };
-      setCurrentUser(demoUser);
-      localStorage.setItem("presidium_demo_user", JSON.stringify(demoUser));
-      return demoUser;
-    }
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: name,
+        },
+      },
+    });
+    if (error) throw error;
+    return data;
   };
 
-  const loginWithGoogle = async () => {
-    if (isRealFirebase) {
-      return await signInWithPopup(auth, googleProvider);
-    } else {
-      await new Promise((res) => setTimeout(res, 500));
-      const demoUser = {
-        uid: "google-demo-user-999",
-        email: "alex.caregiver@gmail.com",
-        displayName: "Alex Rivera",
-        photoURL: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-        isDemo: true,
-        role: "Guardian / Family Member"
-      };
-      setCurrentUser(demoUser);
-      localStorage.setItem("presidium_demo_user", JSON.stringify(demoUser));
-      return demoUser;
-    }
-  };
 
   const logout = async () => {
-    if (isRealFirebase) {
-      await firebaseSignOut(auth);
-    } else {
-      localStorage.removeItem("presidium_demo_user");
-      setCurrentUser(null);
-    }
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
   };
 
   const value = {
@@ -140,7 +94,6 @@ export function AuthProvider({ children }) {
     toggleDrawer,
     loginWithEmail,
     signupWithEmail,
-    loginWithGoogle,
     logout,
   };
 

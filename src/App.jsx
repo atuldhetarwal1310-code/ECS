@@ -1,33 +1,37 @@
-import FloatingWatch from "./components/FloatingWatch";
-import Navbar from "./components/Navbar";
-import Hero from "./components/Hero";
-import Features from "./components/Features";
-import HowItWorks from "./components/HowItWorks";
-import SafetyFeatures from "./components/SafetyFeatures";
-import WhyChoose from "./components/WhyChoose";
-import Impact from "./components/Impact";
-import Demo from "./components/Demo";
-import FAQ from "./components/FAQ";
-import AuthDrawer from "./components/AuthDrawer";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
+import { DeviceProvider } from "./context/DeviceContext";
+import LandingPage from "./pages/LandingPage";
+import Dashboard from "./pages/Dashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
+import DevicePairingModal from "./components/DevicePairingModal";
 
 function App() {
   return (
-    <AuthProvider>
-      <div className="min-h-screen bg-gradient-to-br from-[#020617] via-[#0F172A] to-[#1E3A8A] text-white relative">
-        <Navbar />
-        <Hero />
-        <Features />
-        <HowItWorks />
-        <SafetyFeatures />
-        <WhyChoose />
-        <Impact />
-        <Demo />
-        <FAQ />
-        <FloatingWatch />
-        <AuthDrawer />
-      </div>
-    </AuthProvider>
+    <BrowserRouter>
+      <ThemeProvider>
+        <DeviceProvider>
+          <AuthProvider>
+            <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-main)] transition-colors duration-300 relative selection:bg-rose-500/30 selection:text-white">
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route 
+                  path="/dashboard" 
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+              </Routes>
+              {/* Universal Hardware Device Pairing Modal */}
+              <DevicePairingModal />
+            </div>
+          </AuthProvider>
+        </DeviceProvider>
+      </ThemeProvider>
+    </BrowserRouter>
   );
 }
 
